@@ -110,16 +110,60 @@ Gaming guides and useful resources.<br>
 </footer>
 
 <script>
-function checkUID(){
- const uid=document.getElementById("uid").value.trim();
- const msg=document.getElementById("message");
 
- if(!/^[0-9]{5,20}$/.test(uid)){
-   msg.textContent="Please enter a valid numeric UID (5–20 digits).";
-   return;
- }
+const API_BASE =
+  "https://ff-likes-api.jimmyaura0.workers.dev";
 
- msg.textContent="UID format is valid. Real likes service is not connected yet.";
+async function checkUID() {
+  const uid = document.getElementById("uid").value.trim();
+  const msg = document.getElementById("message");
+
+  if (!/^[0-9]{5,20}$/.test(uid)) {
+    msg.textContent =
+      "Please enter a valid numeric UID (5-20 digits).";
+    return;
+  }
+
+  msg.textContent = "Connecting to FF Likes Hub server...";
+
+  try {
+    const response = await fetch(
+      `${API_BASE}/api/lookup`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          uid: uid,
+          region: "IND"
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if (response.status === 429) {
+      msg.textContent = data.message;
+      return;
+    }
+
+    if (!response.ok) {
+      msg.textContent =
+        data.message || "Something went wrong.";
+      return;
+    }
+
+    msg.textContent =
+      "UID request saved successfully. " +
+      "Player lookup provider is not connected yet. " +
+      "No Likes have been sent.";
+
+  } catch (error) {
+    console.error(error);
+    msg.textContent =
+      "Cannot connect to server. Please try again.";
+  }
 }
 </script>
 
